@@ -6,7 +6,6 @@ import imghdr
 import sys
 import zbar
 import Image
-
 import os
 import fnmatch
 

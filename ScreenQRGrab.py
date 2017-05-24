@@ -12,6 +12,10 @@ import fnmatch
 import time
 import Image
 import pyscreenshot as ImageGrab
+
+
+fp = open(sys.argv[1],'rw+')
+
 	
 def scan_file(filename):
 	pil = Image.open(filename).convert('L')
@@ -53,8 +57,14 @@ def scan_image(pil):
 	del(image)
 	return ret
 
-def screen_grab():
-	col = []
+
+def loadfile(fp):
+	data = []
+	for line in fp:
+		data.append(line.rstrip().decode('hex'))
+	return data
+
+def screen_grab(col,fp):
 	while True:
 		time.sleep(0.5)
 	    	#t = str(time.time()).replace('.','-')
@@ -70,6 +80,9 @@ def screen_grab():
 				if len(i) >1 and  i[1] not in col:
 					print i[0],i[1]
 					col.append(i[1])
+					fp.write(i[1].encode('hex')+"\n")
+		fp.flush()
 
 
-screen_grab()
+data = loadfile(fp)
+screen_grab(data,fp)

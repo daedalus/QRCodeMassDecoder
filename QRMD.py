@@ -44,14 +44,20 @@ def is_image(filename):
 		return False
 	return (res is not None)
 
-def walk(fdir)
+def walk(fdir):
 	for root, d, files in os.walk(fdir):
         	#for items in fnmatch.filter(files, "*"):
 		for fname in files:
 			f = root + "/"  + fname
 			if os.path.isfile(f) == True and is_image(f):
-				ret = scan_image(f)
-				if ret is not None and len(ret) > 0:
-					print f,ret
+				try:
+					ret = scan_image(f)
+					if ret is not None and len(ret) > 0:
+						for i in ret:
+							print f,i
+					#os.flush()
+					sys.stdout.flush()
+				except:
+					pass
 
 walk(sys.argv[1])

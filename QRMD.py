@@ -61,12 +61,16 @@ def scan_image(filename):
 
 	rotate = True
 	if rotate:
+		i = 0
 		for angle in xrange(0,180):
 			pil3 = pil.rotate(angle, resample=Image.BICUBIC, expand=0)
 			r = from_pil(scanner,pil3)
 			if len(r) >0:
 				ret += r
 				print "Found: Rotated: %d", angle
+				i+=1
+			if i > 9:
+				break
 	return ret
 
 def is_image(filename):

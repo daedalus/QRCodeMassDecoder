@@ -26,6 +26,7 @@ def scan_image(filename):
 	pil = Image.open(filename).convert('L')
 
 	def from_pil(scanner,pil):
+		ret = []
 		#pil = pil.convert('L')
 		width, height = pil.size
 		raw = pil.tobytes()
@@ -43,9 +44,10 @@ def scan_image(filename):
 
 		# clean up
 		#del(image)
+		return ret
 
 	r = from_pil(scanner,pil)
-	if r is not None:
+	if len(r) > 0:
 		ret += r
 		print "Found: Normal"
 
@@ -53,7 +55,7 @@ def scan_image(filename):
 	if sharpen:
 		pil2 = pil.filter(ImageFilter.SHARPEN)
 		r = from_pil(scanner,pil2)
-		if r is not None:
+		if len(r) > 0:
 			ret += r
 			print "Found: sharpen!"
 
@@ -62,7 +64,7 @@ def scan_image(filename):
 		for angle in xrange(0,180):
 			pil3 = pil.rotate(angle, resample=Image.BICUBIC, expand=0)
 			r = from_pil(scanner,pil3)
-			if r is not None:
+			if len(r) >0:
 				ret += r
 				print "Found: Rotated: %d", angle
 	return ret

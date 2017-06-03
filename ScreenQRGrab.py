@@ -86,3 +86,4 @@ def screen_grab(col,fp):
 
 data = loadfile(fp)
 screen_grab(data,fp)
+fp.close()

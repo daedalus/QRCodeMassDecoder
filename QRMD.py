@@ -8,10 +8,7 @@ import zbar
 import Image
 import ImageFilter
 import os
-#import fnmatch
 import threading
-
-hex_fp = open(sys.argv[1],'rw+')
 
 def scan_image(filename):
 	ret = []
@@ -152,8 +149,16 @@ def walk(cache,data,fp,fdir):
 
         		#target(args)
 
-cache = loadfile2('.hash_cache')
-data = loadfile(hex_fp)
-walk(cache,data,hex_fp,sys.argv[2])
-fp.close()
-savefile(cache,'.hash_cache')
+
+def main():
+	hex_fp = open(sys.argv[1],'rw+')
+	cache = loadfile2('.hash_cache')
+	data = loadfile(hex_fp)
+	walk(cache,data,hex_fp,sys.argv[2])
+	fp.close()
+	savefile(cache,'.hash_cache')
+
+if __name__ == "__main__":
+    main()
+
+

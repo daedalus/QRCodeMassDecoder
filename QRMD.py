@@ -9,13 +9,14 @@ import Image
 import ImageFilter
 import os
 #import fnmatch
+import threading
 
 hex_fp = open(sys.argv[1],'rw+')
 
 def scan_image(filename):
 	ret = []
 
-	print filename
+	#print filename
 
 	# create a reader
 	# configure the reader
@@ -49,25 +50,27 @@ def scan_image(filename):
 	r = from_pil(scanner,pil)
 	if len(r) > 0:
 		ret += r
-		print "Found: Normal"
+		print filename,"Found: Normal"
 
 	sharpen = True
 	if sharpen:
-		pil2 = pil.filter(ImageFilter.SHARPEN)
+		pil2 = pil
+		#for i in xrange(0,9):
+		pil2 = pil2.filter(ImageFilter.SHARPEN)
 		r = from_pil(scanner,pil2)
 		if len(r) > 0:
 			ret += r
-			print "Found: sharpen!"
+			print filename,"Found: sharpen!"
 
 	rotate = True
 	if rotate:
 		i = 0
-		for angle in xrange(0,180):
+		for angle in xrange(1,181):
 			pil3 = pil.rotate(angle, resample=Image.BICUBIC, expand=0)
 			r = from_pil(scanner,pil3)
 			if len(r) >0:
 				ret += r
-				print "Found: Rotated: %d", angle
+				print filename,"Found: Rotated: %d" % angle
 				i+=1
 			if i > 9:
 				break
@@ -101,6 +104,24 @@ def loadfile(fp):
                 data.append(line.rstrip().decode('hex'))
         return data
 
+threads = []
+consumed_by_threads = 0
+consumed_by_main = 0
+
+def new_thread(target,args):
+	global consumed_by_threads
+	global consumed_by_main
+    	at = threading.activeCount()
+    	if at <= 30:
+        	t = threading.Thread(target=target,args=(args,))
+        	threads.append(t)
+        	consumed_by_threads += 1
+        	t.start()
+    	else:
+        	print "active threads:", at
+        	consumed_by_main += 1
+		target(args)
+
 def walk(cache,data,fp,fdir):
 	for root, d, files in os.walk(fdir):
         	#for items in fnmatch.filter(files, "*"):
@@ -109,19 +130,27 @@ def walk(cache,data,fp,fdir):
 			if f not in cache:
 				if os.path.isfile(f) == True and is_image(f):
 					#try:
-					ret = scan_image(f)
-					if ret is not None and len(ret) > 0:
-						for i in ret:
-							if i[1] not in data:
-								print f,i
-								data.append(i[1])
-								fp.write(i[1].encode('hex')+"\n")
+					def proc_file(f):
+						ret = scan_image(f)
+						if ret is not None and len(ret) > 0:
+							for i in ret:
+								if i[1] not in data:
+									print f,i
+									data.append(i[1])
+									fp.write(i[1].encode('hex')+"\n")
+									fp.flush()
+					#proc_file(f)
+					new_thread(proc_file,f)
 					#os.flush()
 					sys.stdout.flush()
 					#except:
 					#	print "error"
 				cache.append(f)
 
+
+
+
+        		#target(args)
 
 cache = loadfile2('.hash_cache')
 data = loadfile(hex_fp)

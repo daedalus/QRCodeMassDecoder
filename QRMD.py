@@ -125,8 +125,12 @@ def new_thread(target,args):
     	if at <= max_threads:
 		_new_thread(target,args)
     	else:
-		wait_for_child(max_threads)
-		_new_thread(target,args)
+		#wait_for_child(max_threads)
+		#_new_thread(target,args)
+
+		print "Active threads %d" % at
+		target(args)
+
 
 def walk(cachefile,datafile,fdir):
 
@@ -141,6 +145,9 @@ def walk(cachefile,datafile,fdir):
 			if f not in cache:
 				if os.path.isfile(f) == True and is_image(f):
 					cache.append(f)
+					fp_cache.write(f+"\n")
+					fp_cache.flush()
+
 					def proc_file(f):
 						#try:
 						ret = scan_image(f)
@@ -151,9 +158,8 @@ def walk(cachefile,datafile,fdir):
 									print f,i
 									data.append(i[1])
 									fp_data.write(i[1].encode('hex')+"\n")
-									fp_cache.write(f+"\n")
 									fp_data.flush()
-									fp_cache.flush()
+
 						#except:
 						#	print ""
 						

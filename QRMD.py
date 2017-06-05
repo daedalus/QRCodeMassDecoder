@@ -41,13 +41,16 @@ def scan_image(filename):
 		    ret.append((symbol.type, symbol.data))
 
 		# clean up
-		#del(image)
+		del image 
+		del raw
 		return ret
+
+	ct = "[" + threading.currentThread().getName() + "]"
 
 	r = from_pil(scanner,pil)
 	if len(r) > 0:
 		ret += r
-		print filename,"Found: Normal"
+		print ct,filename,"Found: Normal"
 
 	sharpen = True
 	if sharpen:
@@ -57,7 +60,8 @@ def scan_image(filename):
 		r = from_pil(scanner,pil2)
 		if len(r) > 0:
 			ret += r
-			print filename,"Found: sharpen!"
+			print ct,filename,"Found: sharpen!"
+		del pil2
 
 	rotate = True
 	if rotate:
@@ -67,10 +71,14 @@ def scan_image(filename):
 			r = from_pil(scanner,pil3)
 			if len(r) >0:
 				ret += r
-				print filename,"Found: Rotated: %d" % angle
+				print ct,filename,"Found: Rotated: %d" % angle
 				i+=1
 			if i > 9:
 				break
+		del pil3
+	del scanner
+	del pil	
+
 	return ret
 
 def is_image(filename):
@@ -102,60 +110,58 @@ def loadfile(fp):
         return data
 
 threads = []
-consumed_by_threads = 0
-consumed_by_main = 0
+
+max_threads=20
+
+def wait_for_child(max_t)
+	while threading.activeCount() > max_t:
+		time.sleep(5)
 
 def new_thread(target,args):
-	global consumed_by_threads
-	global consumed_by_main
     	at = threading.activeCount()
-    	if at <= 30:
-        	t = threading.Thread(target=target,args=(args,))
-        	threads.append(t)
-        	consumed_by_threads += 1
-        	t.start()
+	def _new_thread(target,args):
+		t = threading.Thread(target=target,args=(args,))
+		threads.append(t)
+		t.start()
+    	if at <= max_t:
+		_new_thread(target,args)
     	else:
-        	print "active threads:", at
-        	consumed_by_main += 1
-		target(args)
+		wait_for_child(max_threads):
+		_new_thread(target,args)
 
 def walk(cache,data,fp,fdir):
 	for root, d, files in os.walk(fdir):
         	#for items in fnmatch.filter(files, "*"):
+		
 		for fname in files:
 			f = root + "/"  + fname
 			if f not in cache:
 				if os.path.isfile(f) == True and is_image(f):
-					#try:
+
 					def proc_file(f):
-						ret = scan_image(f)
-						if ret is not None and len(ret) > 0:
-							for i in ret:
-								if i[1] not in data:
-									print f,i
-									data.append(i[1])
-									fp.write(i[1].encode('hex')+"\n")
-									fp.flush()
-					#proc_file(f)
+						try:
+							ret = scan_image(f)
+							if ret is not None and len(ret) > 0:
+								for i in ret:
+									if i[1] not in data:
+										print f,i
+										data.append(i[1])
+										fp.write(i[1].encode('hex')+"\n")
+										fp.flush()
+						except:
+							print ""
+						
 					new_thread(proc_file,f)
-					#os.flush()
 					sys.stdout.flush()
-					#except:
-					#	print "error"
 				cache.append(f)
-
-
-
-
-        		#target(args)
-
 
 def main():
 	hex_fp = open(sys.argv[1],'rw+')
 	cache = loadfile2('.hash_cache')
 	data = loadfile(hex_fp)
 	walk(cache,data,hex_fp,sys.argv[2])
-	fp.close()
+	wait_for_child(1)
+	hex_fp.close()
 	savefile(cache,'.hash_cache')
 
 if __name__ == "__main__":

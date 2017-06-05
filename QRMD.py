@@ -9,6 +9,7 @@ import Image
 import ImageFilter
 import os
 import threading
+import time
 
 def scan_image(filename):
 	ret = []
@@ -25,24 +26,28 @@ def scan_image(filename):
 
 	def from_pil(scanner,pil):
 		ret = []
-		#pil = pil.convert('L')
-		width, height = pil.size
-		raw = pil.tobytes()
+		try:
+			#pil = pil.convert('L')
+			width, height = pil.size
+			raw = pil.tobytes()
 
-		# wrap image data
-		image = zbar.Image(width, height, 'Y800', raw)
+			# wrap image data
+			image = zbar.Image(width, height, 'Y800', raw)
 
-		# scan the image for barcodes
-		scanner.scan(image)
+			# scan the image for barcodes
+			scanner.scan(image)
 
-		# extract results
-		for symbol in image:
-		    # do something useful with results
-		    ret.append((symbol.type, symbol.data))
+			# extract results
+			for symbol in image:
+			# do something useful with results
+				ret.append((symbol.type, symbol.data))
 
 		# clean up
-		del image 
-		del raw
+			del image 
+			del raw
+		except:
+			pass
+	
 		return ret
 
 	ct = "[" + threading.currentThread().getName() + "]"
@@ -113,7 +118,7 @@ threads = []
 
 max_threads=20
 
-def wait_for_child(max_t)
+def wait_for_child(max_t):
 	while threading.activeCount() > max_t:
 		time.sleep(5)
 
@@ -123,10 +128,10 @@ def new_thread(target,args):
 		t = threading.Thread(target=target,args=(args,))
 		threads.append(t)
 		t.start()
-    	if at <= max_t:
+    	if at <= max_threads:
 		_new_thread(target,args)
     	else:
-		wait_for_child(max_threads):
+		wait_for_child(max_threads)
 		_new_thread(target,args)
 
 def walk(cache,data,fp,fdir):

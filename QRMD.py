@@ -10,6 +10,19 @@ import ImageFilter
 import os
 import threading
 import time
+from PIL import ImageEnhance
+
+def image_enhancer(img):
+	RATIO=1.5	
+
+	new_size = (int(img.size[0] * RATIO), int(img.size[1] * RATIO))
+        img = img.resize(new_size, Image.BILINEAR)
+	enhancer = ImageEnhance.Sharpness(img)
+        img = enhancer.enhance(7.0)
+	enhancer = ImageEnhance.Color(img)
+        img = enhancer.enhance(0)
+	return img
+
 
 def scan_image(filename):
 	ret = []
@@ -68,6 +81,15 @@ def scan_image(filename):
 			print ct,filename,"Found: sharpen!"
 		del pil2
 
+	enhancer = True
+	if enhancer:
+		pil2 = image_enhancer(pil)
+		r = from_pil(scanner,pil2)
+		if len(r) > 0:
+			ret += r
+			print ct,filename,"Found: enhanced!"
+		del pil2
+	
 	rotate = True
 	if rotate:
 		i = 0

@@ -94,25 +94,19 @@ def is_image(filename):
 	return (res is not None)
 
 
-def loadfile2(filename):
+def loadfile(filename):
 	data = []
-	fp2 = open(filename,'r')
-	for line in fp2:
+	fp = open(filename,'rw+')
+	for line in fp:
 		data.append(line.rstrip())
-	fp2.close
-	return data
+	fp.close
+	return fp,data
 
 def savefile(data,filename):
 	fp2 = open(filename,'w')
 	for line in data:
 		fp2.write(line+"\n")
 	fp2.close()
-
-def loadfile(fp):
-        data = []
-        for line in fp:
-                data.append(line.rstrip().decode('hex'))
-        return data
 
 threads = []
 
@@ -134,7 +128,11 @@ def new_thread(target,args):
 		wait_for_child(max_threads)
 		_new_thread(target,args)
 
-def walk(cache,data,fp,fdir):
+def walk(cachefile,datafile,fdir):
+
+	fp_cache,cache = loadfile(cachefile)
+	fp_data,data = loadfile(datafile)
+
 	for root, d, files in os.walk(fdir):
         	#for items in fnmatch.filter(files, "*"):
 		
@@ -142,32 +140,34 @@ def walk(cache,data,fp,fdir):
 			f = root + "/"  + fname
 			if f not in cache:
 				if os.path.isfile(f) == True and is_image(f):
-
+					cache.append(f)
 					def proc_file(f):
-						try:
-							ret = scan_image(f)
-							if ret is not None and len(ret) > 0:
-								for i in ret:
-									if i[1] not in data:
-										print f,i
-										data.append(i[1])
-										fp.write(i[1].encode('hex')+"\n")
-										fp.flush()
-						except:
-							print ""
+						#try:
+						ret = scan_image(f)
+						if ret is not None and len(ret) > 0:
+							for i in ret:
+								if i[1] not in data:
+									
+									print f,i
+									data.append(i[1])
+									fp_data.write(i[1].encode('hex')+"\n")
+									fp_cache.write(f+"\n")
+									fp_data.flush()
+									fp_cache.flush()
+						#except:
+						#	print ""
 						
 					new_thread(proc_file,f)
 					sys.stdout.flush()
-				cache.append(f)
+
+
+	wait_for_child(1)
+	fp_cache.close()
+	fp_data.close()	
 
 def main():
-	hex_fp = open(sys.argv[1],'rw+')
-	cache = loadfile2('.hash_cache')
-	data = loadfile(hex_fp)
-	walk(cache,data,hex_fp,sys.argv[2])
-	wait_for_child(1)
-	hex_fp.close()
-	savefile(cache,'.hash_cache')
+	walk('.hash_cache',sys.argv[1],sys.argv[2])
+
 
 if __name__ == "__main__":
     main()

@@ -95,6 +95,7 @@ def is_image(filename):
 
 
 def loadfile(filename):
+	print "loading file:",filename,"..."
 	data = []
 	fp = open(filename,'rw+')
 	for line in fp:
@@ -114,6 +115,7 @@ max_threads=20
 
 def wait_for_child(max_t):
 	while threading.activeCount() > max_t:
+		print "Waiting for threads...",threading.activeCount()
 		time.sleep(5)
 
 def new_thread(target,args):

@@ -178,7 +178,6 @@ def walk(cachefile,datafile,fdir):
 						if ret is not None and len(ret) > 0:
 							for i in ret:
 								if i[1] not in data:
-			
 									print f,i
 									data.append(i[1])
 									fp_data.write(i[1].encode('hex')+"\n")

@@ -2,7 +2,7 @@
 # Author Dario Clavijo 2017
 # GPLv3
 
-import imghdr 
+import imghdr
 import sys
 import zbar
 import Image
@@ -16,7 +16,7 @@ import pyscreenshot as ImageGrab
 
 fp = open(sys.argv[1],'rw+')
 
-	
+
 def scan_file(filename):
 	pil = Image.open(filename).convert('L')
 	return scan_image(pil)
@@ -52,7 +52,7 @@ def scan_image(pil):
 	    # do something useful with results
 	    ret.append((symbol.type, symbol.data))
 	    #print symbol
-		
+
 	# clean up
 	del(image)
 	return ret
@@ -76,7 +76,7 @@ def screen_grab(col,fp):
 		ret = scan_image(img)
 		if ret is not None and len(ret) > 0:
 			for i in ret:
-				
+
 				if len(i) >1 and  i[1] not in col:
 					print i[0],i[1]
 					col.append(i[1])

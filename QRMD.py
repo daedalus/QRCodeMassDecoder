@@ -2,7 +2,7 @@
 # Author Dario Clavijo 2017
 # GPLv3
 
-import imghdr 
+import imghdr
 import sys
 import zbar
 import Image
@@ -13,7 +13,7 @@ import time
 from PIL import ImageEnhance
 
 def image_enhancer(img):
-	RATIO=1.5	
+	RATIO=1.5
 
 	new_size = (int(img.size[0] * RATIO), int(img.size[1] * RATIO))
         img = img.resize(new_size, Image.BILINEAR)
@@ -56,11 +56,11 @@ def scan_image(filename):
 				ret.append((symbol.type, symbol.data))
 
 		# clean up
-			del image 
+			del image
 			del raw
 		except:
 			pass
-	
+
 		return ret
 
 	ct = "[" + threading.currentThread().getName() + "]"
@@ -89,7 +89,7 @@ def scan_image(filename):
 			ret += r
 			print ct,filename,"Found: enhanced!"
 		del pil2
-	
+
 	rotate = True
 	if rotate:
 		i = 0
@@ -104,7 +104,7 @@ def scan_image(filename):
 				break
 		del pil3
 	del scanner
-	del pil	
+	del pil
 
 	return ret
 
@@ -163,7 +163,7 @@ def walk(cachefile,datafile,fdir):
 
 	for root, d, files in os.walk(fdir):
         	#for items in fnmatch.filter(files, "*"):
-		
+
 		for fname in files:
 			f = root + "/"  + fname
 			if f not in cache:
@@ -178,7 +178,7 @@ def walk(cachefile,datafile,fdir):
 						if ret is not None and len(ret) > 0:
 							for i in ret:
 								if i[1] not in data:
-									
+			
 									print f,i
 									data.append(i[1])
 									fp_data.write(i[1].encode('hex')+"\n")
@@ -186,14 +186,14 @@ def walk(cachefile,datafile,fdir):
 
 						#except:
 						#	print ""
-						
+
 					new_thread(proc_file,f)
 					sys.stdout.flush()
 
 
 	wait_for_child(1)
 	fp_cache.close()
-	fp_data.close()	
+	fp_data.close()
 
 def main():
 	walk('.hash_cache',sys.argv[1],sys.argv[2])

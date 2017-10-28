@@ -2,15 +2,10 @@
 # Author Dario Clavijo 2017
 # GPLv3
 
-import imghdr
 import sys
 import zbar
 import Image
-import os
-import fnmatch
-
 import time
-import Image
 import pyscreenshot as ImageGrab
 
 

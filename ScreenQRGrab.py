@@ -4,12 +4,13 @@
 
 import sys
 import zbar
-import Image
+#import Image
+from PIL import Image
 import time
 import pyscreenshot as ImageGrab
+import base64
 
-
-fp = open(sys.argv[1],'rw+')
+#fp = open(sys.argv[1],'rw+')
 
 
 def scan_file(filename):
@@ -24,18 +25,18 @@ def scan_image(pil):
 	# configure the reader
 	scanner.parse_config('enable')
 
-  	width, height = pil.size
+	width, height = pil.size
 
 	#print width,height
 
-        raw = pil.tobytes()
+	raw = pil.tobytes()
 
 	#fp = open('/home/dclavijo/raw','w+')
 	#fp.write(raw)
 	#fp.close
 
         # wrap image data
-        image = zbar.Image(width, height, 'Y800', raw)
+	image = zbar.Image(width, height, 'Y800', raw)
 
 	#print image
 
@@ -45,7 +46,7 @@ def scan_image(pil):
 	# extract results
 	for symbol in image:
 	    # do something useful with results
-	    ret.append((symbol.type, symbol.data))
+		ret.append((symbol.type, symbol.data))
 	    #print symbol
 
 	# clean up
@@ -53,32 +54,39 @@ def scan_image(pil):
 	return ret
 
 
-def loadfile(fp):
+
+
+def loadfile(filename):
+	fp = open(filename,'r')
 	data = []
 	for line in fp:
-		data.append(line.rstrip().decode('hex'))
+		#data.append(line.rstrip().decode('hex'))
+		data.append(base64.urlsafe_b64decode(line.rstrip()))
+
+	fp.close()
 	return data
 
-def screen_grab(col,fp):
+def screen_grab(col,filename):
+	fp = open(filename,'a+')
 	while True:
 		time.sleep(0.5)
-	    	#t = str(time.time()).replace('.','-')
-	    	#tt = time.time(
 		img=ImageGrab.grab().convert('L')
-	    	#img = img.resize((800,600))
-	    	#img.save(''.join(['img\\',t,'.png']))
-	    	#print time.time() - tt
 		ret = scan_image(img)
 		if ret is not None and len(ret) > 0:
 			for i in ret:
-
 				if len(i) >1 and  i[1] not in col:
-					print i[0],i[1]
+					print (i[0],i[1])
 					col.append(i[1])
-					fp.write(i[1].encode('hex')+"\n")
+					b64 = base64.urlsafe_b64encode(i[1].encode("utf-8")).decode('utf-8')
+					fp.write(b64+"\n")
+					sys.stderr.write(i[1]+"\n")
+					#sys.stdout.write(base64.urlsafe_b64encode(i[1])+"\n")
+		sys.stderr.flush()
+		#sys.stdout.flush()                        
 		fp.flush()
+	fp.close()
 
 
-data = loadfile(fp)
-screen_grab(data,fp)
-fp.close()
+filename = sys.argv[1]
+data = loadfile(filename)
+screen_grab(data,filename)

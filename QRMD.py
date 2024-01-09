@@ -126,10 +126,9 @@ def loadfile(filename):
 	return fp,data
 
 def savefile(data,filename):
-	fp2 = open(filename,'w')
-	for line in data:
-		fp2.write(line+"\n")
-	fp2.close()
+	with open(filename,'w') as fp2:
+		for line in data:
+			fp2.write(line+"\n")
 
 threads = []
 
